@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<phpunit stderr="true" colors="true" bootstrap="bootstrap.php">
+    <php>
+    </php>
+    <filter>
+        <whitelist addUncoveredFilesFromWhitelist="true">
+            
+        </whitelist>
+    </filter>
+    <logging>
+        <log type="coverage-clover" target="clover.xml"/>
+    </logging>
+    <testsuites>
+        <testsuite name="Tests">
+            <directory>./WebFiori/Tests/OAuth</directory>
+        </testsuite>
+    </testsuites>
+</phpunit>
