@@ -21,7 +21,8 @@ namespace WebFiori\OAuth\Providers;
  * $provider = new MicrosoftProvider(
  *     'your-client-id',
  *     'your-client-secret', 
- *     'https://yourapp.com/callback'
+ *     'https://yourapp.com/callback',
+ *     'your-tenant-id' // Optional, defaults to 'common'
  * );
  * $client = new OAuth2Client($provider);
  * ```
@@ -29,13 +30,29 @@ namespace WebFiori\OAuth\Providers;
  * @see https://docs.microsoft.com/en-us/azure/active-directory/develop/v2-oauth2-auth-code-flow
  */
 class MicrosoftProvider extends AbstractProvider {
+    /** @var string Microsoft tenant ID */
+    private string $tenant;
+
+    /**
+     * Create new Microsoft provider.
+     * 
+     * @param string $clientId OAuth2 client identifier
+     * @param string $clientSecret OAuth2 client secret
+     * @param string $redirectUri OAuth2 redirect URI for callbacks
+     * @param string $tenant Microsoft tenant ID (defaults to 'common' for multi-tenant)
+     */
+    public function __construct(string $clientId, string $clientSecret, string $redirectUri, string $tenant = 'common') {
+        parent::__construct($clientId, $clientSecret, $redirectUri);
+        $this->tenant = $tenant;
+    }
+
     /**
      * Get the authorization URL.
      * 
      * @return string Microsoft OAuth2 authorization endpoint
      */
     public function getAuthorizationUrl(): string {
-        return 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize';
+        return "https://login.microsoftonline.com/{$this->tenant}/oauth2/v2.0/authorize";
     }
 
     /**
@@ -53,7 +70,7 @@ class MicrosoftProvider extends AbstractProvider {
      * @return string Microsoft OAuth2 token endpoint
      */
     public function getTokenUrl(): string {
-        return 'https://login.microsoftonline.com/common/oauth2/v2.0/token';
+        return "https://login.microsoftonline.com/{$this->tenant}/oauth2/v2.0/token";
     }
 
     /**
