@@ -14,6 +14,19 @@ use Exception;
 
 /**
  * OAuth2 exception.
+ * 
+ * Base exception class for OAuth2-related errors. This exception is thrown
+ * when OAuth2 operations fail, such as invalid tokens, network errors,
+ * or provider-specific issues.
+ * 
+ * @example
+ * ```php
+ * try {
+ *     $token = $client->exchangeCodeForToken($code);
+ * } catch (OAuth2Exception $e) {
+ *     error_log('OAuth2 error: ' . $e->getMessage());
+ * }
+ * ```
  */
 class OAuth2Exception extends Exception {
 }

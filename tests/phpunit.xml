@@ -1,17 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit stderr="true" colors="true" bootstrap="bootstrap.php">
+<phpunit stderr="true" colors="true" bootstrap="bootstrap.php" displayDetailsOnSkippedTests="true">
     <php>
     </php>
     <filter>
         <whitelist addUncoveredFilesFromWhitelist="true">
-            
+            <file>../WebFiori/OAuth/OAuth2Client.php</file>
+            <file>../WebFiori/OAuth/TokenRequest.php</file>
+            <file>../WebFiori/OAuth/TokenManager.php</file>
+            <file>../WebFiori/OAuth/AuthorizationRequest.php</file>
+            <file>../WebFiori/OAuth/Providers/AbstractProvider.php</file>
+            <file>../WebFiori/OAuth/Providers/MicrosoftProvider.php</file>
+            <file>../WebFiori/OAuth/Storage/FileTokenStorage.php</file>
+            <file>../WebFiori/OAuth/Exceptions/OAuth2Exception.php</file>
+            <file>../WebFiori/OAuth/Exceptions/InvalidTokenException.php</file>
         </whitelist>
     </filter>
     <logging>
         <log type="coverage-clover" target="clover.xml"/>
+        <log type="coverage-text" target="php://stdout" showUncoveredFiles="false"/>
     </logging>
     <testsuites>
-        <testsuite name="Tests">
+        <testsuite name="OAuth Library Tests">
             <directory>./WebFiori/Tests/OAuth</directory>
         </testsuite>
     </testsuites>
