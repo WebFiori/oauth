@@ -35,6 +35,7 @@ A modern, secure, and easy-to-use OAuth2 client library for PHP. Simplify OAuth2
 - [Core Concepts](#-core-concepts)
 - [OAuth2 Flow](#-oauth2-flow)
 - [Providers](#-providers)
+- [OAuthManager](#oauthmanager---multi-provider-support)
 - [Token Management](#-token-management)
 - [Security Features](#-security-features)
 - [Configuration](#-configuration)
@@ -314,6 +315,42 @@ $provider = new MicrosoftProvider(
 );
 ```
 
+### OAuthManager - Multi-Provider Support
+
+```php
+use WebFiori\OAuth\OAuthManager;
+use WebFiori\OAuth\Providers\MicrosoftProvider;
+use WebFiori\OAuth\Storage\FileTokenStorage;
+
+// Create manager with shared storage
+$storage = new FileTokenStorage('/secure/tokens');
+$manager = new OAuthManager($storage);
+
+// Register multiple providers
+$manager->addProvider('microsoft', new MicrosoftProvider(
+    'ms-client-id', 'ms-secret', 'https://app.com/callback'
+));
+
+$manager->addProvider('google', new GoogleProvider(
+    'google-client-id', 'google-secret', 'https://app.com/callback'
+));
+
+// Get clients by provider name
+$msClient = $manager->getClient('microsoft');
+$googleClient = $manager->getClient('google');
+
+// Check if provider exists
+if ($manager->hasProvider('github')) {
+    $githubClient = $manager->getClient('github');
+}
+
+// Get all registered providers
+$providerNames = $manager->getProviderNames(); // ['microsoft', 'google']
+
+// Remove a provider
+$manager->removeProvider('google');
+```
+
 ### Custom Provider
 
 ```php
@@ -440,6 +477,26 @@ public function __construct(
 | `getClientId()` | `string` | OAuth2 client ID |
 | `getClientSecret()` | `string` | OAuth2 client secret |
 | `getRedirectUri()` | `string` | OAuth2 redirect URI |
+
+#### OAuthManager
+
+Multi-provider OAuth2 manager.
+
+**Constructor:**
+```php
+public function __construct(?TokenStorage $storage = null)
+```
+
+**Key Methods:**
+
+| Method | Parameters | Return | Description |
+|--------|------------|--------|-------------|
+| `addProvider()` | `string $name, Provider $provider` | `OAuthManager` | Registers a provider |
+| `getClient()` | `string $name` | `OAuth2Client` | Gets client for provider |
+| `hasProvider()` | `string $name` | `bool` | Checks if provider exists |
+| `getProviderNames()` | - | `array` | Gets all provider names |
+| `removeProvider()` | `string $name` | `OAuthManager` | Removes a provider |
+| `setStorage()` | `TokenStorage $storage` | `OAuthManager` | Sets token storage |
 
 #### TokenStorage Interface
 
