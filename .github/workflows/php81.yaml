@@ -11,6 +11,10 @@ jobs:
     uses: WebFiori/workflows/.github/workflows/test-php.yaml@main
     with:
       php-version: '8.1'
+    secrets:
+      MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+      MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+      MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
 
   code-coverage:
     name: Coverage
@@ -21,6 +25,3 @@ jobs:
       coverage-file: 'php-8.1-coverage.xml'
     secrets:
       CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
-    
-        
-          
