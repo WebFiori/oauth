@@ -33,12 +33,8 @@ class MicrosoftProviderLocalTest extends TestCase {
     }
 
     private function isUsingDefaultValues(): bool {
-        $sampleConfig = require $this->samplePath;
-        
-        return $this->config['microsoft']['client_id'] === $sampleConfig['microsoft']['client_id'] ||
-               $this->config['microsoft']['client_secret'] === $sampleConfig['microsoft']['client_secret'] ||
-               str_contains($this->config['microsoft']['client_id'], 'your-client-id') ||
-               str_contains($this->config['microsoft']['client_secret'], 'your-client-secret');
+        return $this->config['microsoft']['client_id'] === 'your-client-id-here' &&
+               $this->config['microsoft']['client_secret'] === 'your-client-secret-here';
     }
 
     public function testProviderWithRealConfig(): void {
