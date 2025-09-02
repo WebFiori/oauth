@@ -18,10 +18,9 @@
             <file>../WebFiori/OAuth/Providers/AbstractProvider.php</file>
             <file>../WebFiori/OAuth/Providers/MicrosoftProvider.php</file>
             <file>../WebFiori/OAuth/Storage/FileTokenStorage.php</file>
-            <file>../WebFiori/OAuth/Exceptions/OAuth2Exception.php</file>
             <file>../WebFiori/OAuth/OAuthManager.php</file>
             <file>../WebFiori/OAuth/Exceptions/OAuth2Exception.php</file>
-            <file>../WebFiori/OAuth/Exceptions/InvalidTokenException.php>
+            <file>../WebFiori/OAuth/Exceptions/InvalidTokenException.php</file>
         </include>
     </source>
     <coverage>
