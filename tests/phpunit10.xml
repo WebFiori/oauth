@@ -1,21 +1,32 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" stderr="true" colors="true" bootstrap="bootstrap.php" xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd" cacheDirectory=".phpunit.cache">
-  <coverage includeUncoveredFiles="true">
-    <report>
-      <clover outputFile="clover.xml"/>
-    </report>
-  </coverage>
-  <php>
-    </php>
-  <logging/>
-  <testsuites>
-    <testsuite name="Tests">
-      <directory>./WebFiori/Tests/OAuth</directory>
-    </testsuite>
-  </testsuites>
-  <source>
-    <include>
-
-    </include>
-  </source>
+<phpunit xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:noNamespaceSchemaLocation="https://schema.phpunit.de/10.5/phpunit.xsd"
+         bootstrap="bootstrap.php"
+         colors="true"
+         displayDetailsOnSkippedTests="true">
+    <testsuites>
+        <testsuite name="OAuth Library Tests">
+            <directory>./WebFiori/Tests/OAuth</directory>
+        </testsuite>
+    </testsuites>
+    <source>
+        <include>
+            <file>../WebFiori/OAuth/OAuth2Client.php</file>
+            <file>../WebFiori/OAuth/TokenRequest.php</file>
+            <file>../WebFiori/OAuth/TokenManager.php</file>
+            <file>../WebFiori/OAuth/AuthorizationRequest.php</file>
+            <file>../WebFiori/OAuth/Providers/AbstractProvider.php</file>
+            <file>../WebFiori/OAuth/Providers/MicrosoftProvider.php</file>
+            <file>../WebFiori/OAuth/Storage/FileTokenStorage.php</file>
+            <file>../WebFiori/OAuth/Exceptions/OAuth2Exception.php</file>
+            <file>../WebFiori/OAuth/Exceptions/InvalidTokenException.php</file>
+        </include>
+    </source>
+    <coverage>
+        <report>
+            <clover outputFile="clover.xml"/>
+            <html outputDirectory="coverage-html"/>
+            <text outputFile="php://stdout" showUncoveredFiles="false"/>
+        </report>
+    </coverage>
 </phpunit>

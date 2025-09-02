@@ -11,3 +11,4 @@ tests/webfiori/tests/mail/Hello Email Message/*
 *.Identifier
 config/local.php
 /tests/.phpunit.cache
+/tests/coverage-html
