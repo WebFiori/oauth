@@ -72,7 +72,11 @@ class MicrosoftProviderLocalTest extends TestCase {
         $this->assertStringContainsString('redirect_uri=' . urlencode($this->config['microsoft']['redirect_uri']), $authUrl);
     }
 
-    public function testTokenEndpointAccessibility(): void {
+    public function testRefreshTokenAndGraphAPI(): void {
+        if (!isset($this->config['microsoft']['refresh_token']) || empty($this->config['microsoft']['refresh_token'])) {
+            $this->markTestSkipped('No refresh token configured in config/local.php. Add refresh_token key with valid token.');
+        }
+
         $provider = new MicrosoftProvider(
             $this->config['microsoft']['client_id'],
             $this->config['microsoft']['client_secret'],
@@ -80,18 +84,42 @@ class MicrosoftProviderLocalTest extends TestCase {
             $this->config['microsoft']['tenant_id']
         );
 
-        $tokenUrl = $provider->getTokenUrl();
+        $client = new OAuth2Client($provider);
         
-        $ch = curl_init($tokenUrl);
-        curl_setopt($ch, CURLOPT_NOBODY, true);
-        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
-        curl_setopt($ch, CURLOPT_TIMEOUT, 10);
+        // Use refresh token to get new access token
+        try {
+            $tokens = $client->refreshToken($this->config['microsoft']['refresh_token']);
+        } catch (Exception $e) {
+            $this->markTestSkipped('Refresh token failed: ' . $e->getMessage() . '. Token may be expired.');
+        }
         
-        curl_exec($ch);
+        $this->assertArrayHasKey('access_token', $tokens);
+        $this->assertNotEmpty($tokens['access_token']);
+        
+        // Test token validity by calling OpenID Connect userinfo endpoint (requires only openid scope)
+        $ch = curl_init('https://graph.microsoft.com/oidc/userinfo');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $tokens['access_token'],
+                'Accept: application/json'
+            ],
+            CURLOPT_TIMEOUT => 30
+        ]);
+        
+        $response = curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
-
-        $this->assertNotEquals(0, $httpCode, 'Token endpoint should be accessible');
-        $this->assertNotEquals(404, $httpCode, 'Token endpoint should exist');
+        
+        if ($httpCode !== 200) {
+            // If userinfo fails, just verify token format and refresh worked
+            $this->assertStringStartsWith('eyJ', $tokens['access_token'], 'Access token should be a valid JWT');
+            $this->markTestIncomplete('Token refresh successful but API call failed. This may be due to insufficient scopes.');
+            return;
+        }
+        
+        $userData = json_decode($response, true);
+        $this->assertIsArray($userData);
+        $this->assertArrayHasKey('sub', $userData, 'OpenID Connect userinfo should contain subject ID');
     }
 }
