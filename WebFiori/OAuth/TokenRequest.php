@@ -15,12 +15,25 @@ use WebFiori\OAuth\Providers\Provider;
 
 /**
  * Handles OAuth2 token requests.
+ * 
+ * This class manages HTTP requests to OAuth2 token endpoints for
+ * authorization code exchange and token refresh operations.
+ * 
+ * @example
+ * ```php
+ * $provider = new MicrosoftProvider($clientId, $clientSecret, $redirectUri);
+ * $request = new TokenRequest($provider);
+ * $token = $request->exchangeCode($authCode);
+ * ```
  */
 class TokenRequest {
+    /** @var Provider OAuth2 provider instance */
     private Provider $provider;
 
     /**
      * Create new token request.
+     * 
+     * @param Provider $provider OAuth2 provider implementation
      */
     public function __construct(Provider $provider) {
         $this->provider = $provider;
@@ -28,6 +41,11 @@ class TokenRequest {
 
     /**
      * Exchange authorization code for access token.
+     * 
+     * @param string $code Authorization code received from OAuth provider
+     * @param string|null $state Optional state parameter for validation
+     * @return array Token response containing access_token, refresh_token, expires_in, etc.
+     * @throws OAuth2Exception When the token request fails
      */
     public function exchangeCode(string $code, ?string $state = null): array {
         $params = [
@@ -43,6 +61,10 @@ class TokenRequest {
 
     /**
      * Refresh access token using refresh token.
+     * 
+     * @param string $refreshToken Valid refresh token from previous authorization
+     * @return array New token response with refreshed access_token
+     * @throws OAuth2Exception When the refresh request fails
      */
     public function refresh(string $refreshToken): array {
         $params = [
@@ -57,6 +79,10 @@ class TokenRequest {
 
     /**
      * Make HTTP request to token endpoint.
+     * 
+     * @param array<string, string> $params Request parameters for token endpoint
+     * @return array Decoded JSON response from token endpoint
+     * @throws OAuth2Exception When HTTP request fails or returns non-200 status
      */
     private function makeRequest(array $params): array {
         $ch = curl_init();
