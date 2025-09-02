@@ -6,17 +6,16 @@ on:
   pull_request:
     branches: [ main ]
 
-env:
-  MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
-  MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
-  MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
-
 jobs:
   test:
     name: Run Tests
     uses: WebFiori/workflows/.github/workflows/test-php.yaml@main
     with:
       php-version: '8.1'
+    env:
+      MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+      MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+      MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
 
   code-coverage:
     name: Coverage

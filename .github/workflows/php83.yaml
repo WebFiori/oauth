@@ -9,9 +9,6 @@ on:
 env:
   OPERATING_SYS: ubuntu-latest
   PHP_VERSION: 8.3
-  MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
-  MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
-  MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
 
 jobs:
   test:
@@ -20,6 +17,10 @@ jobs:
     with:
       php-version: '8.3'
       phpunit-config: 'tests/phpunit10.xml'
+    env:
+      MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
+      MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
+      MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
 
   code-coverage:
     name: Coverage
