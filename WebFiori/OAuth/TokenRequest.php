@@ -84,7 +84,7 @@ class TokenRequest {
      * @return array Decoded JSON response from token endpoint
      * @throws OAuth2Exception When HTTP request fails or returns non-200 status
      */
-    private function makeRequest(array $params): array {
+    protected function makeRequest(array $params): array {
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $this->provider->getTokenUrl());
         curl_setopt($ch, CURLOPT_POST, true);
