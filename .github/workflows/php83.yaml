@@ -16,10 +16,7 @@ jobs:
     with:
       php-version: '8.3'
       phpunit-config: 'tests/phpunit10.xml'
-    secrets:
-      MS_CLIENT_ID: ${{ secrets.MS_CLIENT_ID }}
-      MS_CLIENT_SECRET: ${{ secrets.MS_CLIENT_SECRET }}
-      MS_TENANT_ID: ${{ secrets.MS_TENANT_ID }}
+    secrets: inherit
             
 
   code-coverage:
