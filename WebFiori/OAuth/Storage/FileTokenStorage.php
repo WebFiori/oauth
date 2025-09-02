@@ -33,7 +33,7 @@ class FileTokenStorage implements TokenStorage {
      * 
      * @param string|null $storageDir Directory to store token files (defaults to system temp directory)
      */
-    public function __construct(string $storageDir = null) {
+    public function __construct(?string $storageDir = null) {
         $this->storageDir = $storageDir ?? sys_get_temp_dir() . '/oauth_tokens';
         if (!is_dir($this->storageDir)) {
             mkdir($this->storageDir, 0700, true);
