@@ -4,14 +4,14 @@
     </php>
     <filter>
         <whitelist addUncoveredFilesFromWhitelist="true">
-            
+            <directory suffix=".php">../WebFiori/OAuth</directory>
         </whitelist>
     </filter>
     <logging>
         <log type="coverage-clover" target="clover.xml"/>
     </logging>
     <testsuites>
-        <testsuite name="Tests">
+        <testsuite name="OAuth Library Tests">
             <directory>./WebFiori/Tests/OAuth</directory>
         </testsuite>
     </testsuites>
