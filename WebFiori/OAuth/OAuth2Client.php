@@ -41,17 +41,22 @@ class OAuth2Client {
     
     /** @var TokenManager Token management instance */
     private TokenManager $tokenManager;
+    
+    /** @var callable TokenRequest factory */
+    private $tokenRequestFactory;
 
     /**
      * Create new OAuth2 client.
      * 
      * @param Provider $provider OAuth2 provider implementation
      * @param TokenStorage|null $storage Token storage implementation (defaults to FileTokenStorage)
+     * @param callable|null $tokenRequestFactory Factory for creating TokenRequest instances
      */
-    public function __construct(Provider $provider, ?TokenStorage $storage = null) {
+    public function __construct(Provider $provider, ?TokenStorage $storage = null, ?callable $tokenRequestFactory = null) {
         $this->provider = $provider;
         $this->storage = $storage ?? new FileTokenStorage();
         $this->tokenManager = new TokenManager($this->storage);
+        $this->tokenRequestFactory = $tokenRequestFactory ?? fn($provider) => new TokenRequest($provider);
     }
 
     /**
@@ -63,7 +68,7 @@ class OAuth2Client {
      * @throws OAuth2Exception When token exchange fails
      */
     public function exchangeCodeForToken(string $code, ?string $state = null): array {
-        $request = new TokenRequest($this->provider);
+        $request = ($this->tokenRequestFactory)($this->provider);
         $token = $request->exchangeCode($code, $state);
         $this->tokenManager->store('access_token', $token);
 
@@ -90,7 +95,7 @@ class OAuth2Client {
      * @throws OAuth2Exception When token refresh fails
      */
     public function refreshToken(string $refreshToken): array {
-        $request = new TokenRequest($this->provider);
+        $request = ($this->tokenRequestFactory)($this->provider);
         $token = $request->refresh($refreshToken);
         $this->tokenManager->store('access_token', $token);
 
