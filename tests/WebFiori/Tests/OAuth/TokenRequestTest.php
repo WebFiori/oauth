@@ -98,6 +98,21 @@ class TokenRequestTest extends TestCase {
         $mockRequest->exchangeCode('invalid_code');
     }
 
+    public function testMakeRequestCurlError(): void {
+        $this->expectException(OAuth2Exception::class);
+        
+        // Create a real TokenRequest to test actual curl error handling
+        $request = new TokenRequest($this->provider);
+        
+        // Try to make request with invalid parameters to trigger curl error
+        $reflection = new \ReflectionClass($request);
+        $method = $reflection->getMethod('makeRequest');
+        $method->setAccessible(true);
+        
+        // This should trigger a curl error or HTTP error
+        $method->invoke($request, ['invalid' => 'params']);
+    }
+
     public function testExpiresAtCalculation(): void {
         $mockRequest = $this->getMockBuilder(TokenRequest::class)
             ->setConstructorArgs([$this->provider])
