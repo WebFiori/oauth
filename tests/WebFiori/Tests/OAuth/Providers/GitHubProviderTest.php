@@ -21,8 +21,8 @@ class GitHubProviderTest extends TestCase {
         $this->assertEquals('https://github.com/login/oauth/access_token', $url);
     }
 
-    public function testGetScopes(): void {
-        $scopes = $this->provider->getScopes();
+    public function testGetDefaultScopes(): void {
+        $scopes = $this->provider->getDefaultScopes();
         $this->assertEquals(['user:email', 'read:user'], $scopes);
     }
 
@@ -36,11 +36,6 @@ class GitHubProviderTest extends TestCase {
 
     public function testGetRedirectUri(): void {
         $this->assertEquals('http://localhost/callback', $this->provider->getRedirectUri());
-    }
-
-    public function testGetDefaultScopes(): void {
-        $scopes = $this->provider->getDefaultScopes();
-        $this->assertEquals(['user:email', 'read:user'], $scopes);
     }
 
     public function testGetUserInfoUrl(): void {
