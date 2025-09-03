@@ -116,6 +116,15 @@ class TokenRequest {
             $data['expires_at'] = time() + $data['expires_in'];
         }
 
+        // Check for OAuth2 error response
+        if (isset($data['error'])) {
+            $errorMsg = $data['error'];
+            if (isset($data['error_description'])) {
+                $errorMsg .= ': ' . $data['error_description'];
+            }
+            throw new OAuth2Exception('OAuth2 error - ' . $errorMsg);
+        }
+
         return $data;
     }
 }
