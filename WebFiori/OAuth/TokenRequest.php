@@ -97,10 +97,20 @@ class TokenRequest {
         curl_close($ch);
 
         if ($httpCode !== 200) {
-            throw new OAuth2Exception('Token request failed with HTTP '.$httpCode);
+            throw new OAuth2Exception('Token request failed with HTTP '.$httpCode.': '.$response);
         }
 
+        // Try JSON first, then URL-encoded form data
         $data = json_decode($response, true);
+        
+        if ($data === null) {
+            // Parse URL-encoded response (GitHub format)
+            parse_str($response, $data);
+            
+            if (empty($data)) {
+                throw new OAuth2Exception('Invalid response format from token endpoint: '.$response);
+            }
+        }
 
         if (isset($data['expires_in'])) {
             $data['expires_at'] = time() + $data['expires_in'];
