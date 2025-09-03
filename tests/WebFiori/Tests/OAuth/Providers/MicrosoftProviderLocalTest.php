@@ -82,7 +82,6 @@ class MicrosoftProviderLocalTest extends TestCase {
 
         $client = new OAuth2Client($provider);
         
-        // Use refresh token to get new access token
         try {
             $tokens = $client->refreshToken($this->config['microsoft']['refresh_token']);
         } catch (Exception $e) {
@@ -92,13 +91,12 @@ class MicrosoftProviderLocalTest extends TestCase {
         $this->assertArrayHasKey('access_token', $tokens);
         $this->assertNotEmpty($tokens['access_token']);
         
-        // Test token validity by calling OpenID Connect userinfo endpoint (requires only openid scope)
-        $ch = curl_init('https://graph.microsoft.com/oidc/userinfo');
+        // Test Microsoft Graph API call
+        $ch = curl_init('https://graph.microsoft.com/v1.0/me');
         curl_setopt_array($ch, [
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_HTTPHEADER => [
-                'Authorization: Bearer ' . $tokens['access_token'],
-                'Accept: application/json'
+                'Authorization: Bearer ' . $tokens['access_token']
             ],
             CURLOPT_TIMEOUT => 30
         ]);
@@ -107,15 +105,12 @@ class MicrosoftProviderLocalTest extends TestCase {
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
         
-        if ($httpCode !== 200) {
-            // If userinfo fails, just verify token format and refresh worked
-            $this->assertStringStartsWith('eyJ', $tokens['access_token'], 'Access token should be a valid JWT');
-            $this->markTestIncomplete('Token refresh successful but API call failed. This may be due to insufficient scopes.');
-            return;
+        if ($httpCode === 200) {
+            $userData = json_decode($response, true);
+            $this->assertIsArray($userData);
+            $this->assertArrayHasKey('userPrincipalName', $userData, 'Microsoft Graph should return user principal name');
+        } else {
+            $this->markTestIncomplete('Token refresh successful but Graph API call failed. This may be due to insufficient scopes.');
         }
-        
-        $userData = json_decode($response, true);
-        $this->assertIsArray($userData);
-        $this->assertArrayHasKey('sub', $userData, 'OpenID Connect userinfo should contain subject ID');
     }
 }

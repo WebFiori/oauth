@@ -12,5 +12,10 @@ return [
         'client_secret' => getenv('GH_CLIENT_SECRET') ?: 'your-github-client-secret-here',
         'redirect_uri' => getenv('GH_REDIRECT_URI') ?: 'http://localhost:8080/github-auth.php',
         'refresh_token' => getenv('GH_RFR_TOKEN') ?: 'your-github-refresh-token-here',
+    ],
+    'google' => [
+        'client_id' => getenv('GOOGLE_CLIENT_ID') ?: 'your-google-client-id-here',
+        'client_secret' => getenv('GOOGLE_CLIENT_SECRET') ?: 'your-google-client-secret-here',
+        'redirect_uri' => getenv('GOOGLE_REDIRECT_URI') ?: 'http://localhost:8080/google-auth.php',
     ]
 ];
