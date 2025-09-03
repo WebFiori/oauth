@@ -19,30 +19,35 @@
   </a>
 </p>
 
-A modern, secure, and easy-to-use OAuth2 client library for PHP. Simplify OAuth2 authentication flows with support for multiple providers, token management, and comprehensive security features.
+An easy-to-use OAuth2 client library for PHP. Simplify OAuth2 authentication flows with support for multiple providers and token storage.
 
 ## ✨ Features
 
 - 🔐 **OAuth2 Authorization Code Flow** - Complete implementation 
-- 🏢 **Multiple Providers** - Built-in support for Microsoft
-- 🔄 **Token Management** - Automatic token refresh and secure storage
+- 🏢 **Multiple Providers** - Built-in support for Microsoft, Google, and GitHub
+- 🔄 **Token Management** - Secure token storage and retrieval
 - 🔧 **Extensible** - Easy to add custom OAuth2 providers
 
 ## 📋 Table of Contents
 
+- [Supported PHP Versions](#-supported-php-versions)
 - [Installation](#-installation)
 - [Quick Start](#-quick-start)
-- [Core Concepts](#-core-concepts)
-- [OAuth2 Flow](#-oauth2-flow)
 - [Providers](#-providers)
-- [OAuthManager](#oauthmanager---multi-provider-support)
-- [Token Management](#-token-management)
-- [Security Features](#-security-features)
-- [Configuration](#-configuration)
-- [Advanced Usage](#-advanced-usage)
+- [Token Storage](#-token-storage)
+- [Multi-Provider Management](#-multi-provider-management)
 - [API Reference](#-api-reference)
 - [Examples](#-examples)
-- [Contributing](#-contributing)
+
+## Supported PHP Versions
+
+|                                                                                        Build Status                                                                                         |
+|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| <a target="_blank" href="https://github.com/WebFiori/oauth/actions/workflows/php81.yaml"><img src="https://github.com/WebFiori/oauth/actions/workflows/php81.yaml/badge.svg?branch=main"></a> |
+| <a target="_blank" href="https://github.com/WebFiori/oauth/actions/workflows/php82.yaml"><img src="https://github.com/WebFiori/oauth/actions/workflows/php82.yaml/badge.svg?branch=main"></a> |
+| <a target="_blank" href="https://github.com/WebFiori/oauth/actions/workflows/php83.yaml"><img src="https://github.com/WebFiori/oauth/actions/workflows/php83.yaml/badge.svg?branch=main"></a> |
+| <a target="_blank" href="https://github.com/WebFiori/oauth/actions/workflows/php84.yaml"><img src="https://github.com/WebFiori/oauth/actions/workflows/php84.yaml/badge.svg?branch=main"></a> |
+
 
 ## 🚀 Installation
 
@@ -50,16 +55,6 @@ Install via Composer:
 
 ```bash
 composer require webfiori/oauth
-```
-
-Or add to your `composer.json`:
-
-```json
-{
-    "require": {
-        "webfiori/oauth": "^1.0"
-    }
-}
 ```
 
 ### Requirements
@@ -104,9 +99,6 @@ try {
     $tokens = $client->exchangeCodeForToken($_GET['code'], $_GET['state'] ?? null);
     echo "Access token received: " . $tokens['access_token'];
     
-    // Tokens are automatically stored for future use
-    $storedTokens = $client->getStoredTokens();
-    
 } catch (Exception $e) {
     echo "OAuth error: " . $e->getMessage();
 }
@@ -137,149 +129,9 @@ $authUrl = $client->getAuthorizationUrl([
 ]);
 
 // After token exchange, use tokens to call Microsoft Graph API
-$tokens = $client->getStoredTokens();
-if ($tokens && !$client->isTokenExpired()) {
+$tokens = $client->exchangeCodeForToken($_GET['code']);
+if ($tokens) {
     $graphData = callMicrosoftGraph($tokens['access_token']);
-}
-```
-
-## 🧠 Core Concepts
-
-### OAuth2Client - The Main Interface
-
-The `OAuth2Client` class orchestrates the entire OAuth2 flow:
-
-```php
-use WebFiori\OAuth\OAuth2Client;
-
-$client = new OAuth2Client($provider, $storage);
-
-// Generate authorization URL
-$authUrl = $client->getAuthorizationUrl($scopes, $additionalParams);
-
-// Exchange code for tokens
-$tokens = $client->exchangeCodeForToken($code, $state);
-
-// Refresh expired tokens
-$newTokens = $client->refreshToken($refreshToken);
-
-// Check token status
-$isExpired = $client->isTokenExpired();
-$storedTokens = $client->getStoredTokens();
-```
-
-### Providers - OAuth2 Service Configuration
-
-Providers encapsulate OAuth2 service-specific configuration:
-
-```php
-use WebFiori\OAuth\Providers\MicrosoftProvider;
-
-$provider = new MicrosoftProvider(
-    $clientId,
-    $clientSecret,
-    $redirectUri,
-    $tenantId // Optional
-);
-
-// Access provider information
-echo $provider->getAuthorizationUrl();  // https://login.microsoftonline.com/...
-echo $provider->getTokenUrl();          // https://login.microsoftonline.com/.../oauth2/v2.0/token
-echo $provider->getClientId();
-```
-
-### Token Storage - Secure Token Persistence
-
-Store tokens securely between requests:
-
-```php
-use WebFiori\OAuth\Storage\FileTokenStorage;
-
-// File-based storage
-$storage = new FileTokenStorage('/secure/path/tokens');
-
-// Store tokens
-$storage->store('access_token', [
-    'access_token' => 'token_value',
-    'refresh_token' => 'refresh_value',
-    'expires_at' => time() + 3600
-]);
-
-// Retrieve tokens
-$tokens = $storage->retrieve('access_token');
-
-// Check if tokens exist
-if ($storage->has('access_token')) {
-    // Use stored tokens
-}
-
-// Clear tokens
-$storage->delete('access_token');
-```
-
-## 🔐 OAuth2 Flow
-
-### Authorization Code Flow with PKCE
-
-```php
-use WebFiori\OAuth\OAuth2Client;
-use WebFiori\OAuth\AuthorizationRequest;
-
-// Step 1: Generate authorization URL with state and PKCE
-$authRequest = new AuthorizationRequest($provider);
-$authUrl = $authRequest->buildUrl([
-    'openid', 'profile', 'email'
-], [
-    'prompt' => 'consent',
-    'access_type' => 'offline'
-]);
-
-// Redirect user to authorization server
-header('Location: ' . $authUrl);
-exit;
-
-// Step 2: Handle callback (after user authorization)
-if (isset($_GET['code'])) {
-    // Validate state parameter (CSRF protection)
-    $expectedState = $_SESSION['oauth_state'] ?? '';
-    $receivedState = $_GET['state'] ?? '';
-    
-    if (!hash_equals($expectedState, $receivedState)) {
-        throw new Exception('Invalid state parameter');
-    }
-    
-    // Exchange authorization code for tokens
-    $tokenRequest = new TokenRequest($provider);
-    $tokens = $tokenRequest->exchangeCode($_GET['code'], $receivedState);
-    
-    // Store tokens securely
-    $storage->store('user_tokens', $tokens);
-}
-```
-
-### Token Refresh Flow
-
-```php
-// Check if token needs refresh
-$tokens = $storage->retrieve('user_tokens');
-
-if ($tokens && isset($tokens['expires_at'])) {
-    if (time() >= $tokens['expires_at']) {
-        // Token expired, refresh it
-        if (isset($tokens['refresh_token'])) {
-            $tokenRequest = new TokenRequest($provider);
-            $newTokens = $tokenRequest->refresh($tokens['refresh_token']);
-            
-            // Update stored tokens
-            $storage->store('user_tokens', $newTokens);
-            $tokens = $newTokens;
-        } else {
-            // No refresh token, need to re-authorize
-            $authUrl = $client->getAuthorizationUrl($scopes);
-            header('Location: ' . $authUrl);
-            exit;
-        }
-    }
 }
 ```
 
@@ -313,6 +165,77 @@ $provider = new MicrosoftProvider(
     'https://yourapp.com/callback',
     'organizations'
 );
+```
+
+### Google Provider
+
+```php
+use WebFiori\OAuth\Providers\GoogleProvider;
+
+$provider = new GoogleProvider(
+    'google-client-id',
+    'google-client-secret',
+    'https://yourapp.com/callback'
+);
+
+$client = new OAuth2Client($provider, $storage);
+
+// Request Google-specific scopes
+$authUrl = $client->getAuthorizationUrl([
+    'openid',
+    'email',
+    'profile',
+    'https://www.googleapis.com/auth/drive.readonly'
+]);
+```
+
+### GitHub Provider
+
+```php
+use WebFiori\OAuth\Providers\GitHubProvider;
+
+$provider = new GitHubProvider(
+    'github-client-id',
+    'github-client-secret',
+    'https://yourapp.com/callback'
+);
+
+$client = new OAuth2Client($provider, $storage);
+
+// Request GitHub-specific scopes
+$authUrl = $client->getAuthorizationUrl([
+    'user:email',
+    'read:user',
+    'repo'
+]);
+```
+
+### Custom Provider
+
+```php
+use WebFiori\OAuth\Providers\AbstractProvider;
+
+class CustomProvider extends AbstractProvider {
+    public function getAuthorizationUrl(): string {
+        return 'https://auth.example.com/oauth/authorize';
+    }
+    
+    public function getTokenUrl(): string {
+        return 'https://auth.example.com/oauth/token';
+    }
+    
+    public function getDefaultScopes(): array {
+        return ['read', 'write'];
+    }
+    
+    public function getUserInfoUrl(): string {
+        return 'https://api.example.com/user';
+    }
+}
+
+// Use custom provider
+$provider = new CustomProvider('client-id', 'client-secret', 'callback-url');
+$client = new OAuth2Client($provider, $storage);
 ```
 
 ### OAuthManager - Multi-Provider Support
@@ -434,29 +357,24 @@ try {
 
 ## 📚 API Reference
 
-### Core Classes
-
-#### OAuth2Client
+### OAuth2Client
 
 The main client for OAuth2 operations.
 
 **Constructor:**
 ```php
-public function __construct(Provider $provider, ?TokenStorage $storage = null)
+public function __construct(Provider $provider, ?TokenStorage $storage = null, ?callable $tokenRequestFactory = null)
 ```
 
-**Key Methods:**
+**Methods:**
 
 | Method | Parameters | Return | Description |
 |--------|------------|--------|-------------|
-| `getAuthorizationUrl()` | `array $scopes = [], array $params = []` | `string` | Generates authorization URL |
+| `getAuthorizationUrl()` | `array $scopes = []` | `string` | Generates authorization URL |
 | `exchangeCodeForToken()` | `string $code, ?string $state = null` | `array` | Exchanges code for tokens |
 | `refreshToken()` | `string $refreshToken` | `array` | Refreshes access token |
-| `getStoredTokens()` | - | `?array` | Gets stored tokens |
-| `isTokenExpired()` | `?array $tokens = null` | `bool` | Checks if token is expired |
-| `hasValidTokens()` | - | `bool` | Checks if valid tokens exist |
 
-#### Provider Classes
+### Provider Classes
 
 **MicrosoftProvider:**
 ```php
@@ -468,17 +386,37 @@ public function __construct(
 )
 ```
 
-**AbstractProvider Methods:**
+**GoogleProvider:**
+```php
+public function __construct(
+    string $clientId,
+    string $clientSecret,
+    string $redirectUri
+)
+```
+
+**GitHubProvider:**
+```php
+public function __construct(
+    string $clientId,
+    string $clientSecret,
+    string $redirectUri
+)
+```
+
+**Provider Methods:**
 
 | Method | Return | Description |
 |--------|--------|-------------|
 | `getAuthorizationUrl()` | `string` | OAuth2 authorization endpoint |
 | `getTokenUrl()` | `string` | OAuth2 token endpoint |
+| `getDefaultScopes()` | `array` | Default OAuth2 scopes |
+| `getUserInfoUrl()` | `string` | User info API endpoint |
 | `getClientId()` | `string` | OAuth2 client ID |
 | `getClientSecret()` | `string` | OAuth2 client secret |
 | `getRedirectUri()` | `string` | OAuth2 redirect URI |
 
-#### OAuthManager
+### OAuthManager
 
 Multi-provider OAuth2 manager.
 
@@ -487,7 +425,7 @@ Multi-provider OAuth2 manager.
 public function __construct(?TokenStorage $storage = null)
 ```
 
-**Key Methods:**
+**Methods:**
 
 | Method | Parameters | Return | Description |
 |--------|------------|--------|-------------|
@@ -498,14 +436,31 @@ public function __construct(?TokenStorage $storage = null)
 | `removeProvider()` | `string $name` | `OAuthManager` | Removes a provider |
 | `setStorage()` | `TokenStorage $storage` | `OAuthManager` | Sets token storage |
 
-#### TokenStorage Interface
+### TokenStorage Interface
 
 | Method | Parameters | Return | Description |
 |--------|------------|--------|-------------|
 | `store()` | `string $key, array $tokens` | `bool` | Stores tokens |
 | `retrieve()` | `string $key` | `?array` | Retrieves tokens |
-| `has()` | `string $key` | `bool` | Checks if tokens exist |
+| `exists()` | `string $key` | `bool` | Checks if tokens exist |
 | `delete()` | `string $key` | `bool` | Deletes tokens |
+
+### TokenManager
+
+Token management utility.
+
+**Constructor:**
+```php
+public function __construct(TokenStorage $storage)
+```
+
+**Methods:**
+
+| Method | Parameters | Return | Description |
+|--------|------------|--------|-------------|
+| `store()` | `string $key, array $token` | `void` | Stores token data |
+| `retrieve()` | `string $key` | `?array` | Retrieves token data |
+| `delete()` | `string $key` | `void` | Deletes token data |
 
 ### Exceptions
 
@@ -513,6 +468,93 @@ public function __construct(?TokenStorage $storage = null)
 |-----------|-------------|
 | `OAuth2Exception` | General OAuth2 errors |
 | `InvalidTokenException` | Token validation errors |
+
+## 📄 Examples
+
+### Complete Microsoft OAuth2 Flow
+
+```php
+<?php
+require_once 'vendor/autoload.php';
+
+use WebFiori\OAuth\OAuth2Client;
+use WebFiori\OAuth\Providers\MicrosoftProvider;
+use WebFiori\OAuth\Storage\FileTokenStorage;
+
+session_start();
+
+// Configuration
+$provider = new MicrosoftProvider(
+    'your-client-id',
+    'your-client-secret',
+    'https://yourapp.com/callback',
+    'common'
+);
+
+$storage = new FileTokenStorage();
+$client = new OAuth2Client($provider, $storage);
+
+if (!isset($_GET['code'])) {
+    // Step 1: Redirect to authorization
+    $authUrl = $client->getAuthorizationUrl([
+        'openid', 'profile', 'email', 'offline_access'
+    ]);
+    
+    header('Location: ' . $authUrl);
+    exit;
+} else {
+    // Step 2: Handle callback
+    try {
+        $tokens = $client->exchangeCodeForToken($_GET['code'], $_GET['state'] ?? null);
+        
+        // Use access token to call Microsoft Graph
+        $ch = curl_init('https://graph.microsoft.com/v1.0/me');
+        curl_setopt_array($ch, [
+            CURLOPT_RETURNTRANSFER => true,
+            CURLOPT_HTTPHEADER => [
+                'Authorization: Bearer ' . $tokens['access_token'],
+                'Content-Type: application/json'
+            ]
+        ]);
+        
+        $response = curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        curl_close($ch);
+        
+        if ($httpCode === 200) {
+            $userData = json_decode($response, true);
+            echo "Welcome, " . $userData['displayName'] . "!";
+        }
+        
+    } catch (Exception $e) {
+        echo "Error: " . $e->getMessage();
+    }
+}
+```
+
+### Token Refresh Example
+
+```php
+<?php
+use WebFiori\OAuth\OAuth2Client;
+use WebFiori\OAuth\TokenManager;
+
+$tokenManager = new TokenManager($storage);
+$tokens = $tokenManager->retrieve('user_tokens');
+
+if ($tokens && isset($tokens['expires_at']) && time() >= $tokens['expires_at']) {
+    // Token expired, refresh it
+    if (isset($tokens['refresh_token'])) {
+        try {
+            $newTokens = $client->refreshToken($tokens['refresh_token']);
+            $tokenManager->store('user_tokens', $newTokens);
+            echo "Token refreshed successfully";
+        } catch (Exception $e) {
+            echo "Failed to refresh token: " . $e->getMessage();
+        }
+    }
+}
+```
 
 ## 📄 License
 
