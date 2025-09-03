@@ -49,6 +49,9 @@ class MicrosoftProvider extends AbstractProvider {
     /**
      * Get the authorization URL.
      * 
+     * Authorization URL will have following format:
+     * 'https://login.microsoftonline.com/{$this->tenant}/oauth2/v2.0/authorize'
+     * 
      * @return string Microsoft OAuth2 authorization endpoint
      */
     public function getAuthorizationUrl(): string {
@@ -58,7 +61,13 @@ class MicrosoftProvider extends AbstractProvider {
     /**
      * Get default scopes.
      * 
-     * @return array<string> Default Microsoft Graph scopes for basic profile access
+     * @see https://learn.microsoft.com/en-us/entra/identity-platform/scopes-oidc
+     * 
+     * @return array<string> Default Microsoft Graph scopes for basic profile access. The
+     * returned array contains the following scopes:
+     * - openid: Required scope for OpenID Connect authentication
+     * - profile: Required scope for basic profile information
+     * - email: Required scope for accessing the user's email address
      */
     public function getDefaultScopes(): array {
         return ['openid', 'profile', 'email'];
@@ -67,7 +76,10 @@ class MicrosoftProvider extends AbstractProvider {
     /**
      * Get the token URL.
      * 
-     * @return string Microsoft OAuth2 token endpoint
+     * The returned URL will have following format:
+     * 'https://login.microsoftonline.com/{$this->tenant}/oauth2/v2.0/token'
+     * 
+     * @return string Microsoft OAuth2 token endpoint.
      */
     public function getTokenUrl(): string {
         return "https://login.microsoftonline.com/{$this->tenant}/oauth2/v2.0/token";
@@ -76,7 +88,8 @@ class MicrosoftProvider extends AbstractProvider {
     /**
      * Get the user info URL.
      * 
-     * @return string Microsoft Graph user profile endpoint
+     * @return string Microsoft Graph user profile endpoint. The value of the URL is 
+     * 'https://graph.microsoft.com/v1.0/me'
      */
     public function getUserInfoUrl(): string {
         return 'https://graph.microsoft.com/v1.0/me';

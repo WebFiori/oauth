@@ -10,6 +10,7 @@
             <file>../WebFiori/OAuth/AuthorizationRequest.php</file>
             <file>../WebFiori/OAuth/Providers/AbstractProvider.php</file>
             <file>../WebFiori/OAuth/Providers/MicrosoftProvider.php</file>
+            <file>../WebFiori/OAuth/Providers/GitHubProvider.php</file>
             <file>../WebFiori/OAuth/Storage/FileTokenStorage.php</file>
             <file>../WebFiori/OAuth/OAuthManager.php</file>
             <file>../WebFiori/OAuth/Exceptions/OAuth2Exception.php</file>
